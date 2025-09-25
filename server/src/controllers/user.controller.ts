@@ -1,14 +1,16 @@
 import { Request, Response } from "express";
 import { User } from "../entities/user.entity.js";
+import { Msg } from "../entities/msg.entity.js";
 import { AppDataSource } from "../data-source.js";
 
 const userRepository = AppDataSource.getRepository(User);
+const msgRepository = AppDataSource.getRepository(Msg);
 
 const findById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
 
-    const user = await userRepository.findOneById(id);
+    const user = await userRepository.findOneBy({ id });
 
     if (!user) {
       return res.status(404).json({
@@ -56,8 +58,7 @@ const register = async (req: Request, res: Response) => {
 const remove = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-
-    const user = await userRepository.findOneById(id);
+    const user = await userRepository.findOne({ where: { id: parseInt(id) } });
 
     if (!user) {
       return res.status(404).json({
@@ -67,13 +68,28 @@ const remove = async (req: Request, res: Response) => {
     }
 
     const expDate = getNextDate(user.createdDate);
-    if (expDate >= user.createdDate) {
+
+    if (new Date() >= expDate) {
+      // 1. Remove messages
+      const msgs = await msgRepository.find({
+        where: { user: { id: user.id } },
+      });
+      if (msgs.length > 0) {
+        await msgRepository.remove(msgs);
+      }
+
+      // 2. Remove user
       await userRepository.remove(user);
+
+      return res.status(200).json({
+        success: true,
+        message: "Your account was removed after 24 hours",
+      });
     }
 
-    res.status(200).json({
-      success: true,
-      message: "Your account was removed after 24 hours",
+    return res.status(400).json({
+      success: false,
+      message: "Account cannot be removed yet. Less than 24h since creation.",
     });
   } catch (error) {
     console.error(error);
