@@ -19,7 +19,7 @@ const findById = async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json({ success: true, user });
+    res.status(200).json({ success: true, data: user });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -109,7 +109,7 @@ function getNextDate(inputDate: Date) {
 
 const getAll = async (req: Request, res: Response) => {
   const users = await userRepository.find();
-  return res.status(200).json({ success: true, users });
+  return res.status(200).json({ success: true, data: users });
 };
 
 export default {

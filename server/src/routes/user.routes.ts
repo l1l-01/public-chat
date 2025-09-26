@@ -11,8 +11,11 @@ router.get("/users", userController.getAll);
 
 router.post("/register", validate(UserSchema), userController.register);
 
-router.post("/send-msg/:id", validate(MsgSchema), msgController.create);
-
 router.delete("/users/:id", userController.remove);
+
+// Msgs
+router.get("/msgs", msgController.getAll);
+router.post("/send-msg/:id", validate(MsgSchema), msgController.create);
+router.delete("/msgs", msgController.remove);
 
 export default router;
