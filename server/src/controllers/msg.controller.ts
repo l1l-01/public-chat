@@ -20,6 +20,13 @@ const create = async (req: Request, res: Response) => {
     const msg = msgRepository.create({ content, user });
     await msgRepository.save(msg);
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("newMessage", msg);
+    } else {
+      console.log("Socket.io not initialized");
+    }
+
     return res.status(201).json({ success: true, data: msg });
   } catch (error) {
     console.error("Error creating message:", error);
@@ -40,7 +47,7 @@ const getAll = async (req: Request, res: Response) => {
 const remove = async (req: Request, res: Response) => {
   try {
     const msgsCount = await msgRepository.count();
-    if (msgsCount >= 50) {
+    if (msgsCount >= 100) {
       await msgRepository.clear();
       return res
         .status(200)

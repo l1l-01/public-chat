@@ -16,7 +16,7 @@ export class Msg {
   @ManyToOne(() => User, (user) => user.msgs)
   user!: Object; // breaks metadata cycle
 
-  @Column({ length: 300 })
+  @Column({ length: 150 })
   content!: string;
 
   @CreateDateColumn()
