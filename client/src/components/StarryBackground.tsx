@@ -5,7 +5,7 @@ const StarryBackground = () => {
   useEffect(() => {
     const createStars = () => {
       const container = document.getElementById("star-container");
-      for (let i = 0; i < 300; i++) {
+      for (let i = 0; i < 100; i++) {
         const star = document.createElement("div");
         star.className = "star";
         star.style.top = `${Math.random() * window.innerHeight}px`;
