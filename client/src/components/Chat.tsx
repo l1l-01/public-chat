@@ -1,9 +1,60 @@
+import { useState } from "react";
+import axios from "axios";
 import { TextField, Button } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import SendIcon from "@mui/icons-material/Send";
 import PublicIcon from "@mui/icons-material/Public";
 
-const Chat = () => {
+const getNextDate = (inputDate: Date): Date => {
+  const date = new Date(inputDate);
+  date.setDate(date.getDate() + 1);
+  return date;
+};
+
+const Chat = ({ setValid }) => {
+  const [msg, setMsg] = useState<string>("");
+
+  const storedDate: string | null = localStorage.getItem(
+    "account-creation-date",
+  );
+
+  const createdAt: Date = new Date(storedDate);
+  const nextDate: Date = getNextDate(createdAt);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(nextDate);
+    if (new Date() >= nextDate) {
+      try {
+        const userId = localStorage.getItem("account-id");
+        if (!userId) {
+          return;
+        }
+        if (userId && !isNaN(parseInt(userId))) {
+          await axios.delete(
+            `http://localhost:3000/api/users/${parseInt(userId)}`,
+          );
+          localStorage.removeItem("account-creation-date");
+          localStorage.removeItem("account-id");
+          localStorage.removeItem("account-username");
+          setValid(false);
+        }
+
+        if (msg.length < 1) {
+          alert("Message too long");
+          return;
+        }
+
+        if (msg.length > 150) {
+          alert("Message too long");
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
   return (
     <ul className="space-y-5 p-5 flex flex-col gap-4">
       <h1 className="text-2xl font-bold text-gray-300 mb-10 flex justify-start items-center gap-2">
@@ -38,7 +89,7 @@ const Chat = () => {
           </span>
         </span>
       </li>
-      <form className="mt-10 flex px-6">
+      <form className="mt-10 flex px-6" onSubmit={handleSubmit}>
         <TextField
           id="outlined-basic"
           label="Write a message..."
@@ -63,6 +114,7 @@ const Chat = () => {
         <Button
           variant="contained"
           endIcon={<SendIcon />}
+          type="submit"
           sx={{
             color: "#040404",
             fontWeight: "bold",

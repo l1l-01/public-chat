@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { TextField, Button, Alert } from "@mui/material";
 
-const Register = () => {
+const Register = ({ setValid }) => {
   const [username, setUsername] = useState<string>("");
   const [error, setError] = useState<string>("");
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,6 +24,7 @@ const Register = () => {
       );
       localStorage.setItem("account-id", response.data.user.id);
       localStorage.setItem("account-username", response.data.user.username);
+      setValid(true);
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
         console.log(err);
