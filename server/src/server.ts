@@ -21,7 +21,7 @@ const io = new Server(server, {
   },
 });
 
-app.use("/api/", userRoutes);
+app.use("/api", userRoutes);
 
 // Save the socket server
 app.set("io", io);

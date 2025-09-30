@@ -7,11 +7,11 @@ import msgController from "../controllers/msg.controller.js";
 
 const router = express.Router();
 
+// Users
 router.get("/users", userController.getAll);
-
 router.post("/register", validate(UserSchema), userController.register);
-
-router.delete("/users/:id", userController.remove);
+router.delete("/users/:id", userController.removeAfterOneDay);
+router.delete("/deregister/:id", userController.deregister);
 
 // Msgs
 router.get("/msgs", msgController.getAll);

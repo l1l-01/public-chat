@@ -4,7 +4,8 @@ import Chat from "./components/Chat";
 import { useState } from "react";
 
 function App() {
-  const [valid, setValid] = useState<boolean | null>(true);
+  const [valid, setValid] = useState<boolean | null>(false);
+  console.log(valid);
 
   return (
     <div className="flex justify-center items-center h-screen">

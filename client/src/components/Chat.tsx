@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { TextField, Button } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import SendIcon from "@mui/icons-material/Send";
 import PublicIcon from "@mui/icons-material/Public";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
 const getNextDate = (inputDate: Date): Date => {
   const date = new Date(inputDate);
@@ -21,12 +22,40 @@ const Chat = ({ setValid }) => {
   const createdAt: Date = new Date(storedDate);
   const nextDate: Date = getNextDate(createdAt);
 
+  const [userId, setUserId] = useState<string | null>(
+    localStorage.getItem("account-id"),
+  );
+
+  useEffect(() => {
+    if (userId && !isNaN(parseInt(userId))) {
+      setValid(true);
+    }
+  }, [userId, setValid]);
+
+  const handleDeregister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!userId) {
+        return;
+      }
+      if (userId && !isNaN(parseInt(userId))) {
+        await axios.delete(
+          `http://localhost:3000/api/deregister/${parseInt(userId)}`,
+        );
+        localStorage.removeItem("account-creation-date");
+        localStorage.removeItem("account-id");
+        localStorage.removeItem("account-username");
+        setValid(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(nextDate);
     if (new Date() >= nextDate) {
       try {
-        const userId = localStorage.getItem("account-id");
         if (!userId) {
           return;
         }
@@ -37,7 +66,6 @@ const Chat = ({ setValid }) => {
           localStorage.removeItem("account-creation-date");
           localStorage.removeItem("account-id");
           localStorage.removeItem("account-username");
-          setValid(false);
         }
 
         if (msg.length < 1) {
@@ -57,10 +85,17 @@ const Chat = ({ setValid }) => {
 
   return (
     <ul className="space-y-5 p-5 flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-gray-300 mb-10 flex justify-start items-center gap-2">
-        <PublicIcon />
-        Public Chat
-      </h1>
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-2xl font-bold text-gray-300 flex justify-start items-center gap-2">
+          <PublicIcon />
+          Public Chat
+        </h1>
+        <form onSubmit={handleDeregister}>
+          <Button size="large" type="submit">
+            <ExitToAppIcon className="w-6 h-6 text-gray-300" />
+          </Button>
+        </form>
+      </div>
       <li className="max-w-lg flex gap-x-2 sm:gap-x-4 me-11">
         <span className="shrink-0 inline-flex items-center justify-center size-9.5 rounded-full bg-neutral-800">
           <span className="text-sm font-medium text-white">

@@ -1,10 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { TextField, Button, Alert } from "@mui/material";
 
 const Register = ({ setValid }) => {
   const [username, setUsername] = useState<string>("");
   const [error, setError] = useState<string>("");
+
+  const [userId, setUserId] = useState<string | null>(
+    localStorage.getItem("account-id"),
+  );
+
+  useEffect(() => {
+    if (userId && !isNaN(parseInt(userId))) {
+      setValid(true);
+    }
+  }, [userId, setValid]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim().length === 0) {
@@ -34,6 +45,7 @@ const Register = ({ setValid }) => {
       }
     }
   };
+
   return (
     <form
       className="lg:w-[500px] md:w-[300px] h-[340px] p-8 rounded-3xl border-1 border-[#CFCFCF] flex justify-center items-center flex-col gap-5"

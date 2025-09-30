@@ -55,7 +55,35 @@ const register = async (req: Request, res: Response) => {
   }
 };
 
-const remove = async (req: Request, res: Response) => {
+const deregister = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const user = await userRepository.findOne({ where: { id: parseInt(id) } });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  // Remove messages
+  const msgs = await msgRepository.find({
+    where: { user: { id: user.id } },
+  });
+  if (msgs.length > 0) {
+    await msgRepository.remove(msgs);
+  }
+
+  // Remove user
+  await userRepository.remove(user);
+
+  return res.status(200).json({
+    success: true,
+    message: "Your account was removed",
+  });
+};
+
+const removeAfterOneDay = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const user = await userRepository.findOne({ where: { id: parseInt(id) } });
@@ -70,7 +98,7 @@ const remove = async (req: Request, res: Response) => {
     const expDate = getNextDate(user.createdDate);
 
     if (new Date() >= expDate) {
-      // 1. Remove messages
+      // Remove messages
       const msgs = await msgRepository.find({
         where: { user: { id: user.id } },
       });
@@ -78,7 +106,7 @@ const remove = async (req: Request, res: Response) => {
         await msgRepository.remove(msgs);
       }
 
-      // 2. Remove user
+      // Remove user
       await userRepository.remove(user);
 
       return res.status(200).json({
@@ -115,6 +143,7 @@ const getAll = async (req: Request, res: Response) => {
 export default {
   register,
   findById,
-  remove,
+  removeAfterOneDay,
   getAll,
+  deregister,
 };
