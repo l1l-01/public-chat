@@ -1,10 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import io, { Socket } from "socket.io-client";
 import { TextField, Button } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import SendIcon from "@mui/icons-material/Send";
 import PublicIcon from "@mui/icons-material/Public";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+
+interface Msg {
+  id: number;
+  content: string;
+  user: {
+    id: number;
+    username: string;
+  };
+  created_at: Date;
+}
 
 const getNextDate = (inputDate: Date): Date => {
   const date = new Date(inputDate);
@@ -18,7 +29,7 @@ const fetchLast20Msgs = async () => {
 };
 
 const Chat = ({ setValid }) => {
-  const [msgs, setMsgs] = useState<string[]>([]);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
   const [msg, setMsg] = useState<string>("");
 
   const storedDate: string | null = localStorage.getItem(
@@ -67,12 +78,12 @@ const Chat = ({ setValid }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (new Date() >= nextDate) {
-      try {
-        if (!userId) {
-          alert("Something ");
-          return;
-        }
+    try {
+      if (!userId) {
+        alert("UserId is missing ");
+        return;
+      }
+      if (new Date() >= nextDate) {
         if (userId && !isNaN(parseInt(userId))) {
           await axios.delete(
             `http://localhost:3000/api/users/${parseInt(userId)}`,
@@ -81,40 +92,61 @@ const Chat = ({ setValid }) => {
           localStorage.removeItem("account-id");
           localStorage.removeItem("account-username");
         }
-
-        if (msg.length < 1) {
-          alert("Message too long");
-          return;
-        }
-
-        if (msg.length > 150) {
-          alert("Message too long");
-          return;
-        }
-
-        await axios.post(
-          `http://localhost:3000/api/send-msg/${parseInt(userId)}`,
-          {
-            content: msg,
-          },
-        );
-        setMsg("");
-      } catch (error) {
-        console.error(error);
       }
+      if (msg.length < 1) {
+        alert("Message too long");
+        return;
+      }
+
+      if (msg.length > 150) {
+        alert("Message too long");
+        return;
+      }
+
+      await axios.post(
+        `http://localhost:3000/api/send-msg/${parseInt(userId)}`,
+        {
+          content: msg,
+        },
+      );
+      setMsg("");
+    } catch (error) {
+      console.error(error);
     }
   };
 
+  const socketRef = useRef<Socket | null>(null);
+
+  // Setup WebSocket
+  useEffect(() => {
+    socketRef.current = io("http://localhost:3000", {
+      transports: ["websocket"],
+    });
+    console.log("WebSocket connected");
+
+    const handleNewMsg = (newMsg: Msg) => {
+      setMsgs((prev) => [...prev, newMsg]);
+      console.log(newMsg);
+    };
+
+    socketRef.current.on("newMsg", handleNewMsg);
+
+    return () => {
+      socketRef.current?.off("newMsg", handleNewMsg);
+      socketRef.current?.disconnect();
+    };
+  }, []);
+
   return (
-    <ul className="space-y-5 p-5 flex flex-col gap-4">
+    <ul className="space-y-5 px-5 py-10 flex flex-col gap-4 w-[700px] bg-gray-400/2  border-gray-500 border-2 rounded-[20px]">
       <div className="flex justify-between items-center mb-10">
-        <h1 className="text-2xl font-bold text-gray-300 flex justify-start items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-200 flex justify-start items-center gap-2">
           <PublicIcon />
           Public Chat
         </h1>
         <form onSubmit={handleDeregister}>
           <Button size="large" type="submit">
-            <ExitToAppIcon className="w-6 h-6 text-gray-300" />
+            <ExitToAppIcon className="w-6 h-6 text-gray-200" />
           </Button>
         </form>
       </div>
@@ -126,6 +158,12 @@ const Chat = ({ setValid }) => {
               <div className="grow text-end space-y-3">
                 <div className="inline-block bg-neutral-900 border border-neutral-800 rounded-2xl p-4 shadow-2xs font-semibold">
                   <p className="text-sm text-white">{msg.content}</p>
+                  <span className="w-full text-right text-white mt-2 text-[10px] mt-5">
+                    {new Date(msg.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
               </div>
 
@@ -145,17 +183,23 @@ const Chat = ({ setValid }) => {
               </span>
             </span>
 
-            <div className="border rounded-2xl p-4 space-y-3 bg-neutral-900 border-neutral-700 text-white">
+            <div className="border rounded-2xl p-4 space-y-3 bg-neutral-900 border-neutral-700 text-white flex flex-col">
               <h3 className="text-lg font-semibold text-gray-300 mb-2">
                 {msg.user.username}
               </h3>
               {msg.content}
+              <span className="w-full text-right text-white mt-2 text-[10px] mt-5">
+                {new Date(msg.created_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
             </div>
           </li>
         );
       })}
 
-      <form className="mt-10 flex px-6" onSubmit={handleSubmit}>
+      <form className="mt-10 flex" onSubmit={handleSubmit}>
         <TextField
           id="outlined-basic"
           label="Write a message..."

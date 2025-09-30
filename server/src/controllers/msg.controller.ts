@@ -23,7 +23,7 @@ const create = async (req: Request, res: Response) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("newMessage", msg);
+      io.emit("newMsg", msg);
     } else {
       console.log("Socket.io not initialized");
     }
@@ -53,7 +53,7 @@ const getLast20Messages = async (req: Request, res: Response) => {
   try {
     const msgs = await msgRepository.find({
       take: 20,
-      order: { id: "DESC" },
+      order: { id: "ASC" },
       relations: ["user"],
     });
 
