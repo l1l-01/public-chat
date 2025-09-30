@@ -17,5 +17,6 @@ router.delete("/deregister/:id", userController.deregister);
 router.get("/msgs", msgController.getAll);
 router.post("/send-msg/:id", validate(MsgSchema), msgController.create);
 router.delete("/msgs", msgController.remove);
+router.get("/msgs/last-20", msgController.getLast20Messages);
 
 export default router;

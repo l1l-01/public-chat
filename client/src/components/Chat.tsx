@@ -12,7 +12,13 @@ const getNextDate = (inputDate: Date): Date => {
   return date;
 };
 
+const fetchLast20Msgs = async () => {
+  const data = await axios.get("http://localhost:3000/api/msgs/last-20");
+  return data;
+};
+
 const Chat = ({ setValid }) => {
+  const [msgs, setMsgs] = useState<string[]>([]);
   const [msg, setMsg] = useState<string>("");
 
   const storedDate: string | null = localStorage.getItem(
@@ -31,6 +37,13 @@ const Chat = ({ setValid }) => {
       setValid(true);
     }
   }, [userId, setValid]);
+
+  useEffect(() => {
+    fetchLast20Msgs().then((data) => {
+      setMsgs(data.data.data);
+      console.log(data.data.data);
+    });
+  }, []);
 
   const handleDeregister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +70,7 @@ const Chat = ({ setValid }) => {
     if (new Date() >= nextDate) {
       try {
         if (!userId) {
+          alert("Something ");
           return;
         }
         if (userId && !isNaN(parseInt(userId))) {
@@ -77,6 +91,14 @@ const Chat = ({ setValid }) => {
           alert("Message too long");
           return;
         }
+
+        await axios.post(
+          `http://localhost:3000/api/send-msg/${parseInt(userId)}`,
+          {
+            content: msg,
+          },
+        );
+        setMsg("");
       } catch (error) {
         console.error(error);
       }
@@ -96,40 +118,52 @@ const Chat = ({ setValid }) => {
           </Button>
         </form>
       </div>
-      <li className="max-w-lg flex gap-x-2 sm:gap-x-4 me-11">
-        <span className="shrink-0 inline-flex items-center justify-center size-9.5 rounded-full bg-neutral-800">
-          <span className="text-sm font-medium text-white">
-            <PersonIcon />
-          </span>
-        </span>
 
-        <div className="border rounded-2xl p-4 space-y-3 bg-neutral-900 border-neutral-700 text-white">
-          <h3 className="text-lg font-semibold text-gray-300 mb-2">Username</h3>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam.
-        </div>
-      </li>
+      {msgs.map((msg) => {
+        if (msg.user.id == userId) {
+          return (
+            <li className="flex ms-auto gap-x-2 sm:gap-x-4" key={msg.id}>
+              <div className="grow text-end space-y-3">
+                <div className="inline-block bg-neutral-900 border border-neutral-800 rounded-2xl p-4 shadow-2xs font-semibold">
+                  <p className="text-sm text-white">{msg.content}</p>
+                </div>
+              </div>
 
-      <li className="flex ms-auto gap-x-2 sm:gap-x-4">
-        <div className="grow text-end space-y-3">
-          <div className="inline-block bg-neutral-900 border border-neutral-800 rounded-2xl p-4 shadow-2xs font-semibold">
-            <p className="text-sm text-white">Lorem ipsum dolor sit</p>
-          </div>
-        </div>
+              <span className="shrink-0 inline-flex items-center justify-center size-9.5 rounded-full bg-neutral-900">
+                <span className="text-sm font-medium text-white">
+                  <PersonIcon />
+                </span>
+              </span>
+            </li>
+          );
+        }
+        return (
+          <li className="max-w-lg flex gap-x-2 sm:gap-x-4 me-11" key={msg.id}>
+            <span className="shrink-0 inline-flex items-center justify-center size-9.5 rounded-full bg-neutral-800">
+              <span className="text-sm font-medium text-white">
+                <PersonIcon />
+              </span>
+            </span>
 
-        <span className="shrink-0 inline-flex items-center justify-center size-9.5 rounded-full bg-neutral-900">
-          <span className="text-sm font-medium text-white">
-            <PersonIcon />
-          </span>
-        </span>
-      </li>
+            <div className="border rounded-2xl p-4 space-y-3 bg-neutral-900 border-neutral-700 text-white">
+              <h3 className="text-lg font-semibold text-gray-300 mb-2">
+                {msg.user.username}
+              </h3>
+              {msg.content}
+            </div>
+          </li>
+        );
+      })}
+
       <form className="mt-10 flex px-6" onSubmit={handleSubmit}>
         <TextField
           id="outlined-basic"
           label="Write a message..."
           variant="outlined"
           className="w-full rounded-full"
+          inputProps={{ maxLength: 150 }}
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
           sx={{
             input: { color: "#6a7282" },
             "& label": { color: "#6a7282" },

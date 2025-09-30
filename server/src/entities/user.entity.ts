@@ -1,9 +1,10 @@
+import { Exclude } from "class-transformer";
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   OneToMany,
+  CreateDateColumn,
 } from "typeorm";
 import { Msg } from "./msg.entity.js";
 
@@ -12,12 +13,13 @@ export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  // one user → many messages
-  @OneToMany(() => Msg, (msg) => msg.user)
-  msgs!: Msg[];
-
   @Column({ length: 20 })
   username!: string;
+
+  @OneToMany(() => Msg, (msg) => msg.user)
+  // excludes from JSON
+  @Exclude()
+  msgs!: Msg[];
 
   @CreateDateColumn()
   createdDate!: Date;
