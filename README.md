@@ -11,7 +11,7 @@ A real-time public chat application built with React and TypeScript for the fron
 - REST API backend for message and user management
 
 ## Tech Stack
-- **Backend:** ExpressJs, TypeScript, TypeORM, Cors, dotenv, pg, reflect-metadata, socket.io, typeorm, zod, Yarn
+- **Backend:** ExpressJs, TypeScript, TypeORM, class-transformer, Cors, dotenv, pg, reflect-metadata, socket.io, typeorm, zod, Yarn
 - **Database:** PostgreSQL
 - **Frontend:** React, Material UI, tailwindcss, socket.io, Axios
 
@@ -25,7 +25,7 @@ I. Clone the repository:
    git clone https://github.com/l1l-01/public-chat.git
    cd public-chat
    ```
-# Backend
+- Backend
 
 1. Navigate to the backend folder
    ```bash
@@ -58,7 +58,7 @@ I. Clone the repository:
    node dist/server.js
    ```
 
-# Frontend
+- Frontend
 
 1. Navigate to the frontend folder
    ```bash
@@ -76,16 +76,16 @@ I. Clone the repository:
    ```
 
 ## Usage
-- Navigate to `http://localhost:5173/` in your browser, register and start chatting.
+- Navigate to `http://localhost:5173/`in your browser, register and start chatting.
 
 ## Project Structure
 - `client/`: Frontend
 - `server/`: Backend
 
 ## Note:
-- This project includes a StarryBackground React component that creates a live starry sky effect: The number of stars (i) controls how many stars are created, Do not increase it higher than 300, as this can significantly impact browser and pc performance.
+- This project includes a StarryBackground React component that creates a live starry sky effect: The number of stars (i) controls how many stars are created. Do not increase it higher than 300, as this can significantly impact browser and pc performance.
 
 
-## License
+## License: MIT
 
 This project is open-source and free to use.
