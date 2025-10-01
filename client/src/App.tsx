@@ -10,6 +10,7 @@ function App() {
   return (
     <div className="flex justify-center items-center h-screen">
       <StarryBackground />
+
       {valid ? <Chat setValid={setValid} /> : <Register setValid={setValid} />}
     </div>
   );
