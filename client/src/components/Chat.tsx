@@ -17,6 +17,14 @@ interface Msg {
   created_at: Date;
 }
 
+const deleteMsgs = async () => {
+  try {
+    await axios.delete(`http://localhost:3000/api/msgs`);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const getNextDate = (inputDate: Date): Date => {
   const date = new Date(inputDate);
   date.setDate(date.getDate() + 1);
@@ -42,6 +50,10 @@ const Chat = ({ setValid }) => {
   const [userId, setUserId] = useState<string | null>(
     localStorage.getItem("account-id"),
   );
+
+  if (userId && !isNaN(parseInt(userId))) {
+    deleteMsgs();
+  }
 
   useEffect(() => {
     if (userId && !isNaN(parseInt(userId))) {
